@@ -8,7 +8,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,15 +19,15 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime orderDate;
+    private Long userId; // l'id du client qui passe la commande
 
-    private String status; // PENDING, CONFIRMED, DELIVERED
+    private Double totalPrice;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private String status; // "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"
 
-    @OneToMany(cascade = CascadeType.ALL)
+    private LocalDateTime createdAt;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private List<CartItem> items;
+    private List<OrderItem> items; // liste des produits dans la commande
 }

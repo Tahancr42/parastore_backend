@@ -17,22 +17,40 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public OrderResponse createOrder(@RequestBody OrderRequest request) {
+    public OrderResponse create(@RequestBody OrderRequest request) {
         return orderService.createOrder(request);
     }
 
+    // depuis le panier (exploite CartItem et vide le panier)
+    @PostMapping("/from-cart/{userId}")
+    public OrderResponse createFromCart(@PathVariable Long userId) {
+        return orderService.createOrderFromCart(userId);
+    }
+
+    // admin
     @GetMapping
-    public List<OrderResponse> getAllOrders() {
+    public List<OrderResponse> all() {
         return orderService.getAllOrders();
     }
 
+    // “mes commandes”
+    @GetMapping("/by-user/{userId}")
+    public List<OrderResponse> byUser(@PathVariable Long userId) {
+        return orderService.getOrdersByUser(userId);
+    }
+
     @GetMapping("/{id}")
-    public OrderResponse getOrderById(@PathVariable Long id) {
+    public OrderResponse one(@PathVariable Long id) {
         return orderService.getOrderById(id);
     }
 
+    @PatchMapping("/{id}/status")
+    public OrderResponse updateStatus(@PathVariable Long id, @RequestParam String status) {
+        return orderService.updateStatus(id, status);
+    }
+
     @DeleteMapping("/{id}")
-    public void deleteOrder(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         orderService.deleteOrder(id);
     }
 }

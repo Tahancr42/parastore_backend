@@ -5,22 +5,33 @@ import lombok.*;
 
 @Entity
 @Table(name = "order_items")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class OrderItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
+    // Côté propriétaire : garde la @JoinColumn
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
-    private String productName;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
+    @Column(name = "product_name_snapshot", nullable = false, length = 200)
+    private String productNameSnapshot;
+
+    @Column(name = "unit_price_snapshot", nullable = false)
+    private double unitPriceSnapshot;
+
+    @Column(nullable = false)
     private int quantity;
 
-    private Double price;
+    @Transient
+    public double getLineTotal() {
+        return unitPriceSnapshot * quantity;
+    }
 }

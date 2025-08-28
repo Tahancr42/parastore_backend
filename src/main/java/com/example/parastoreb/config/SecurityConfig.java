@@ -124,6 +124,12 @@ public class SecurityConfig {
                         // 👉 Ouvre TOUT /api/products/** pour les tests Postman (CRUD)
                         .requestMatchers("/api/products/**").permitAll()
 
+                        // Panier & commandes : user connecté
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/by-user/**", "/api/orders/from-cart/**").authenticated()
+                        // Admin/manager : gestion globale des commandes
+                        .requestMatchers("/api/orders/**").hasAnyRole("ADMIN","MANAGER","CLIENT")
+
                         // (optionnel) ouvrir swagger si tu l'utilises
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 

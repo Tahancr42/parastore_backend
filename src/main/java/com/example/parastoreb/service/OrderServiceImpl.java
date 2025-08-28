@@ -1,12 +1,13 @@
 package com.example.parastoreb.service;
 
-import com.example.parastoreb.dto.order.OrderItemRequest;
 import com.example.parastoreb.dto.order.OrderItemResponse;
 import com.example.parastoreb.dto.order.OrderRequest;
 import com.example.parastoreb.dto.order.OrderResponse;
+import com.example.parastoreb.entity.CartItem;
 import com.example.parastoreb.entity.Order;
 import com.example.parastoreb.entity.OrderItem;
 import com.example.parastoreb.entity.Product;
+import com.example.parastoreb.repository.CartItemRepository;
 import com.example.parastoreb.repository.OrderRepository;
 import com.example.parastoreb.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final CartItemRepository cartItemRepository; // << nécessaire pour from-cart
 
     @Override
     public OrderResponse createOrder(OrderRequest request) {
@@ -41,22 +43,62 @@ public class OrderServiceImpl implements OrderService {
             item.setProductNameSnapshot(product.getName());    // snapshot
             item.setUnitPriceSnapshot(product.getPrice());     // snapshot
             item.setQuantity(reqItem.getQuantity());
-
             return item;
         }).toList();
 
         order.setItems(items);
 
-        // 3) Calculer le total à partir des snapshots
+        // 3) Total
         double total = items.stream()
                 .mapToDouble(i -> i.getUnitPriceSnapshot() * i.getQuantity())
                 .sum();
         order.setTotalPrice(total);
 
-        // 4) Sauvegarder (cascade ALL attendu sur Order.items)
+        // 4) Sauvegarde
         Order saved = orderRepository.save(order);
 
-        // 5) Retourner la réponse mappée
+        // 5) Réponse
+        return mapToResponse(saved);
+    }
+
+    @Override
+    public OrderResponse createOrderFromCart(Long userId) {
+        // Récupérer le panier
+        List<CartItem> cartItems = cartItemRepository.findByUser_Id(userId);
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Le panier est vide, impossible de créer une commande.");
+        }
+
+        // Créer la commande
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStatus("PENDING");
+        order.setCreatedAt(LocalDateTime.now());
+
+        // Convertir CartItem -> OrderItem (snapshots)
+        List<OrderItem> items = cartItems.stream().map(ci -> {
+            Product p = ci.getProduct();
+            OrderItem oi = new OrderItem();
+            oi.setOrder(order);
+            oi.setProduct(p);
+            oi.setProductNameSnapshot(p.getName());
+            oi.setUnitPriceSnapshot(p.getPrice());
+            oi.setQuantity(ci.getQuantity());
+            return oi;
+        }).toList();
+
+        order.setItems(items);
+
+        double total = items.stream()
+                .mapToDouble(i -> i.getUnitPriceSnapshot() * i.getQuantity())
+                .sum();
+        order.setTotalPrice(total);
+
+        Order saved = orderRepository.save(order);
+
+        // Vider le panier
+        cartItemRepository.deleteByUser_Id(userId);
+
         return mapToResponse(saved);
     }
 
@@ -68,10 +110,26 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponse> getOrdersByUser(Long userId) {
+        return orderRepository.findByUserId(userId).stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
     public OrderResponse getOrderById(Long id) {
         return orderRepository.findById(id)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+    }
+
+    @Override
+    public OrderResponse updateStatus(Long id, String status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+        order.setStatus(status); // TODO: valider transitions si tu as un Enum
+        Order saved = orderRepository.save(order);
+        return mapToResponse(saved);
     }
 
     @Override
@@ -99,8 +157,7 @@ public class OrderServiceImpl implements OrderService {
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .totalPrice(order.getTotalPrice())
-                .items(itemDTOs) // <-- maintenant types alignés
+                .items(itemDTOs)
                 .build();
     }
-
 }

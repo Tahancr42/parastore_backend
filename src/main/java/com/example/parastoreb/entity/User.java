@@ -24,7 +24,7 @@ public class User {
 
     private String phone;
 
-    private String role; // ROLE_ADMIN | ROLE_ACHAT | ROLE_CLIENT
+    private String role; // ROLE_ADMIN | ROLE_MANAGER | ROLE_CLIENT
 
     private boolean enabled = true;
 }

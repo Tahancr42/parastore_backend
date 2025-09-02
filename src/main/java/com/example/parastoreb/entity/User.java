@@ -24,7 +24,8 @@ public class User {
 
     private String phone;
 
-    private String role; // ROLE_ADMIN | ROLE_MANAGER | ROLE_CLIENT
+    @Enumerated(EnumType.STRING)
+    private Role role; // ADMIN | GESTIONNAIRE | CLIENT
 
     private boolean enabled = true;
 }

@@ -1,5 +1,6 @@
-package com.example.parastoreb.dto.auth;
+package com.example.parastoreb.dto.user;
 
+import com.example.parastoreb.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,9 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
-    private String token;
-    private String role;
+public class UpdateUserRoleDto {
     private Long userId;
-    private String redirectUrl;
+    private Role newRole;
 }

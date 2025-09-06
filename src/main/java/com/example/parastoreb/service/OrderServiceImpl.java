@@ -10,8 +10,10 @@ import com.example.parastoreb.entity.Product;
 import com.example.parastoreb.repository.CartItemRepository;
 import com.example.parastoreb.repository.OrderRepository;
 import com.example.parastoreb.repository.ProductRepository;
+import com.example.parastoreb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,8 +25,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository; // << nécessaire pour from-cart
+    private final UserRepository userRepository; // << pour récupérer l'email
 
     @Override
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         // 1) Créer la commande
         Order order = new Order();
@@ -62,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse createOrderFromCart(Long userId) {
         // Récupérer le panier
         List<CartItem> cartItems = cartItemRepository.findByUser_Id(userId);
@@ -124,6 +129,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse updateStatus(Long id, String status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
@@ -133,6 +139,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);
     }
@@ -151,9 +158,15 @@ public class OrderServiceImpl implements OrderService {
                         .build())
                 .toList();
 
+        // Récupérer l'email de l'utilisateur
+        String userEmail = userRepository.findById(order.getUserId())
+                .map(user -> user.getEmail())
+                .orElse("N/A");
+
         return OrderResponse.builder()
                 .id(order.getId())
                 .userId(order.getUserId())
+                .userEmail(userEmail)
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .totalPrice(order.getTotalPrice())

@@ -2,6 +2,7 @@ package com.example.parastoreb.service;
 
 import com.example.parastoreb.entity.User;
 import com.example.parastoreb.entity.Role;
+import com.example.parastoreb.controller.UserController.UserUpdateRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,8 @@ public interface UserService {
     Optional<User> getUserByEmail(String email);
     
     User updateUserRole(Long userId, Role newRole);
+    
+    User updateUserProfile(Long userId, UserUpdateRequest request);
     
     boolean deleteUser(Long userId);
     

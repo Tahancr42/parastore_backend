@@ -50,7 +50,9 @@ public class AuthController {
 
         // Créer un nouvel utilisateur CLIENT
         User user = User.builder()
+                .name(req.getName())
                 .email(email)
+                .phone(req.getPhone())
                 .password(passwordEncoder.encode(password))
                 .role(Role.CLIENT)  // Utilisation de l'enum
                 .enabled(true)

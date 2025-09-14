@@ -158,15 +158,18 @@ public class OrderServiceImpl implements OrderService {
                         .build())
                 .toList();
 
-        // Récupérer l'email de l'utilisateur
-        String userEmail = userRepository.findById(order.getUserId())
-                .map(user -> user.getEmail())
-                .orElse("N/A");
+        // Récupérer les informations de l'utilisateur
+        var user = userRepository.findById(order.getUserId());
+        String userEmail = user.map(u -> u.getEmail()).orElse("N/A");
+        String userName = user.map(u -> u.getName()).orElse("N/A");
+        String userPhone = user.map(u -> u.getPhone()).orElse("N/A");
 
         return OrderResponse.builder()
                 .id(order.getId())
                 .userId(order.getUserId())
                 .userEmail(userEmail)
+                .userName(userName)
+                .userPhone(userPhone)
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .totalPrice(order.getTotalPrice())

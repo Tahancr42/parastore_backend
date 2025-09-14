@@ -57,6 +57,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/orders/by-user/**", "/api/orders/from-cart/**").authenticated()
                         // Admin/gestionnaire : gestion globale des commandes
                         .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_ADMIN","ROLE_GESTIONNAIRE","ROLE_CLIENT")
+                        
+                        // Profil utilisateur : user connecté
+                        .requestMatchers("/api/user/**").authenticated()
 
                         // (optionnel) ouvrir swagger si tu l'utilises
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

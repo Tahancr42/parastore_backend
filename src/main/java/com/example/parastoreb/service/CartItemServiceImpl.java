@@ -113,6 +113,7 @@ public class CartItemServiceImpl implements CartItemService {
                 .id(ci.getId())
                 .productId(p.getId())
                 .productName(p.getName())
+                .imageUrl(p.getImageUrl())
                 .unitPrice(unit)
                 .quantity(ci.getQuantity())
                 .lineTotal(unit * ci.getQuantity())

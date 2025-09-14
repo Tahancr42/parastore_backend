@@ -3,6 +3,7 @@ package com.example.parastoreb.service;
 import com.example.parastoreb.entity.User;
 import com.example.parastoreb.entity.Role;
 import com.example.parastoreb.repository.UserRepository;
+import com.example.parastoreb.controller.UserController.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getUsersByRole(Role role) {
         return userRepository.findByRole(role);
+    }
+
+    @Override
+    public User updateUserProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        // Vérifier si l'email est déjà utilisé par un autre utilisateur
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("Cette adresse email est déjà utilisée");
+            }
+        }
+        
+        // Mettre à jour les champs fournis
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        
+        return userRepository.save(user);
     }
 
     @Override

@@ -13,6 +13,8 @@ public class OrderResponse {
     private Long id;
     private Long userId;
     private String userEmail; // Email de l'utilisateur
+    private String userName; // Nom de l'utilisateur
+    private String userPhone; // Téléphone de l'utilisateur
     private String status;
     private double totalPrice;
     private LocalDateTime createdAt;
